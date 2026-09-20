@@ -1,118 +1,103 @@
 # newsletter-sweep
 
-An always-on agent that triages newsletters and feeds against *your* stated
-interests, dedups against what you already have, and files the good ones
-into a knowledge base you own — locally, or wherever you configure it.
+A tool that reads your newsletters so you don't have to skim all of them.
 
-Any LLM provider (Anthropic, OpenAI, Ollama). Any topic (nothing is
-hardcoded — declare topics up front, or let the first sweep propose them
-from your actual content). Any sink (local markdown by default, Notion
-opt-in). Runs by hand, on cron, or in GitHub Actions.
+You tell it what you care about. It checks your feeds (or inbox), figures
+out which items are actually worth your time, explains *why* each one
+matters to you specifically, and saves the good ones — to a folder on your
+computer, or to Notion if you set that up. Everything else gets quietly
+skipped.
 
-## The 5-minute path
+It works with Anthropic, OpenAI, or a model running on your own machine —
+your choice. It can run once when you ask it to, or on a schedule so it
+just handles itself.
+
+## Try it in 5 minutes
 
 ```bash
 pip install newsletter-sweep
 mkdir my-sweep && cd my-sweep
-newsletter-sweep init          # two questions, drafts your profile + a starter config
-# edit applies_to_me.md, add a feed URL or two to config.yaml
-newsletter-sweep run --dry-run # see what it would do, writes nothing
+newsletter-sweep init          # answer two quick questions
+# open applies_to_me.md and config.yaml, add a newsletter URL or two
+newsletter-sweep run --dry-run # shows what it *would* do — saves nothing yet
 ```
 
-No email account, no Notion, no OAuth. RSS is the default source and local
-markdown the default sink — you can be looking at real output in a few
-minutes.
+No email account needed, no sign-ups, nothing to connect. It starts by
+reading public RSS feeds and saving results as plain text files, so you can
+see it working in a few minutes.
 
-## Why `applies_to_me.md` is required
+## Why it asks you two questions first
 
-Without a stated point of view, triage degenerates into a generic
-summarizer — which every newsletter-digest tool already does. The one
-thing that makes this useful is a line, per item, written **from your own
-seat**: not "this is about AI agents" but "this changes how you'd approach
-X, given what you're building." `newsletter-sweep init` doesn't hand you a
-blank file — it asks two questions and drafts a starting profile for you to
-edit. A run with no profile refuses to proceed, on purpose; see
+`newsletter-sweep init` asks: what do you do, and what are you trying to
+get better at. That's it — takes under a minute.
+
+Here's why it bothers to ask: a generic newsletter summarizer just tells
+you what an article says, which you could get from the article itself.
+What's actually useful is being told *why it matters to you* — not "this
+is about AI agents" but "this changes how you'd handle the thing you're
+working on." The tool can only do that if it knows a little about you
+first. So it won't run at all until you've told it — more on why in
 [`references/why-the-profile-gate.md`](references/why-the-profile-gate.md).
 
-## How it works
+## What it does, step by step
 
-```
-source (rss, imap)  →  triage (LLM, cheap model)  →  router (your topics)  →  sink (markdown, notion)
-                                     ↓
-                        synthesis (LLM, stronger model)
-                        "why this applies to me"
-```
+1. **Checks your sources** — RSS feeds, or your inbox if you set that up.
+2. **Decides what's worth keeping**, using your two-line profile as the
+   bar. Skips anything you've already seen before, even if it shows up
+   with a different link.
+3. **Explains why each keeper matters to you**, in a sentence or two.
+4. **Saves it** — to a local folder by default, or Notion if you've
+   connected that.
 
-Two model slots, not one — a cheap model runs the relevance pass on every
-candidate item; a stronger model only runs synthesis on items that already
-passed. That split is most of where per-run cost lives. See
-[`references/adapter-authoring.md`](references/adapter-authoring.md).
+Every step that doesn't need judgment (checking for duplicates, saving
+files, formatting) is handled by plain code — the AI model is only asked
+to make the calls that actually need it: is this worth keeping, and why
+does it matter to you. That keeps it cheap to run and easy to trust.
 
-Deterministic work — dedup, HTML extraction, digest assembly, file/API
-writes — is plain code, not prompts. The LLM is only asked to make
-judgment calls: is this relevant, and what does it mean for you.
+## Setting up where things come from and go
 
-Each item is triaged in its own isolated call rather than one giant batch
-prompt — a raw newsletter body can run to tens of thousands of characters,
-and that never needs to sit in one context alongside everything else.
+**Where content comes from:**
 
-## Topics
+| Source | What you need |
+|---|---|
+| RSS feeds | Nothing — just paste the feed URLs in |
+| Your inbox (e.g. Gmail) | An app password — a few minutes to set up, [instructions here](references/connector-setup.md) |
 
-Two modes, set in `config.yaml`:
+**Where the good stuff gets saved:**
 
-- **`declared`** — you list topics up front. Deterministic, best once you
-  know your shape.
-- **`learned`** (default) — routes into whatever folders already exist
-  under `knowledge_path`; on a genuinely empty first run, proposes a
-  taxonomy from your real content and asks you to confirm (or, on an
-  unattended/cron run, accepts provisionally and flags it in the digest for
-  you to review).
+| Destination | Setup |
+|---|---|
+| A local folder | Nothing — it's on by default |
+| Notion | A free access token — two clicks, [instructions here](references/connector-setup.md) |
 
-Either way, nothing is silently dropped — anything that doesn't fit a known
-topic lands in `uncategorized/`.
+## Organizing what it saves
 
-## Sources
+By default, the tool figures out categories on its own from your first
+batch of content and checks with you before locking them in. If you'd
+rather decide up front, you can list your own categories in the config
+file instead. Either way, nothing gets thrown away — anything that doesn't
+fit a category still gets saved, just under "uncategorized." Details in
+[`references/taxonomy-guide.md`](references/taxonomy-guide.md).
 
-| Source | Auth | Setup |
-|---|---|---|
-| RSS/Atom | none | list feed URLs in `config.yaml` |
-| IMAP | app password | see [`references/connector-setup.md`](references/connector-setup.md) |
+## Running it on autopilot
 
-Gmail via IMAP + an app password is the practical path — far simpler than
-OAuth. A self-hosted Gmail MCP server is documented as a power-user
-alternative in the same reference, along with why it's meaningfully harder
-to set up than it looks.
+Add [`.github/workflows/sweep.yml`](.github/workflows/sweep.yml) to your
+own repo and it'll run on a schedule automatically (once a week by
+default — easy to change). Or run it from any computer's own cron job the
+same way you'd run any command-line tool.
 
-## Sinks
+## See a real example
 
-| Sink | Default | Setup |
-|---|---|---|
-| Local markdown | yes | none — writes under `knowledge_path` |
-| Notion | opt-in | integration token, two clicks — see `references/connector-setup.md` |
+[`examples/security-aware-pm/`](examples/security-aware-pm/) shows a
+filled-in setup end to end — a real profile, a real config — so you can
+see what "done" looks like before writing your own.
 
-## Running unattended
+## Want to know how it works under the hood?
 
-`.github/workflows/sweep.yml` runs a scheduled sweep in GitHub Actions —
-copy it into your own repo, add your secrets, done. Cron works the same way
-locally: `newsletter-sweep run --config /path/to/config.yaml`.
-
-## Example
-
-[`examples/security-aware-pm/`](examples/security-aware-pm/) is a full
-worked profile and config — a reader with a security background triaging
-AI/product newsletters — showing what a filled-in setup actually looks
-like end to end.
-
-## Design notes worth reading before you extend this
-
-- **Never strip URL-bearing lines when extracting a body.** Many
-  newsletters are link-dense digests where each item is a headline plus a
-  link; naive "clean up the text" extraction can gut the substance out of
-  a genuinely valuable source. Trim tracking/redirect noise only.
-- **Keep raw payloads out of any single large context.** A newsletter body
-  can run to tens of thousands of characters; triage.py deliberately calls
-  the LLM once per item rather than batching many raw bodies into one
-  prompt.
+The design decisions — why it uses two different AI models, why it never
+strips links out of newsletter text, how to add a new source or
+destination — are written up in [`references/`](references/) rather than
+cluttering this page.
 
 ## License
 

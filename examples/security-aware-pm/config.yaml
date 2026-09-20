@@ -1,0 +1,45 @@
+# A worked example config — a security-aware AI PM's setup. Copy this
+# directory, adjust the profile and feeds, and go.
+
+knowledge_path: ./knowledge
+profile_path: ./applies_to_me.md
+state_path: ./.newsletter-sweep/state.json
+
+provider:
+  name: anthropic
+  triage_model: claude-haiku-4-5-20251001
+  synthesis_model: claude-sonnet-5
+  api_key_env: ANTHROPIC_API_KEY
+
+topics:
+  mode: declared
+  declared:
+    - ai-product-management
+    - agentic-architecture
+    - ai-security
+    - pm-craft
+
+sources:
+  - type: rss
+    feeds:
+      - "https://www.lennysnewsletter.com/feed"
+      - "https://thehackernews.com/feeds/posts/default"
+  # - type: imap
+  #   host: imap.gmail.com
+  #   username_env: NEWSLETTER_IMAP_USER
+  #   password_env: NEWSLETTER_IMAP_APP_PASSWORD
+  #   mailbox: INBOX
+
+sinks:
+  - type: markdown
+  # - type: notion
+  #   integration_token_env: NOTION_TOKEN
+  #   parent_page_id: "your-page-id"
+
+relevance_themes:
+  - "AI product strategy, roadmapping, and evals"
+  - "Agentic architecture: multi-agent systems, tool use, context management"
+  - "AI security and adversarial AI with implications for product builders"
+  - "PM craft for products without market tailwinds — decline, retention, not just growth"
+
+dry_run: true

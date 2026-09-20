@@ -1,0 +1,21 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+
+# per-user working state — never committed for a fresh clone;
+# a real deployment (e.g. the GitHub Actions example) commits its own
+# knowledge/ and .newsletter-sweep/ deliberately, so this only guards the
+# repo root, not every nested copy.
+/config.yaml
+/applies_to_me.md
+/knowledge/
+/digests/
+/.newsletter-sweep/
+
+.env
+.DS_Store
+.pytest_cache/

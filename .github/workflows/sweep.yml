@@ -1,0 +1,41 @@
+# Scheduled newsletter-sweep run. Copy this into your own repo's
+# .github/workflows/, commit config.yaml and applies_to_me.md alongside it
+# (neither contains secrets — those live in repo Secrets, referenced below
+# only by env var name), and add whichever secrets your config actually
+# uses under Settings → Secrets and variables → Actions.
+name: newsletter-sweep
+
+on:
+  schedule:
+    - cron: "0 7 * * 1"  # 07:00 UTC every Monday — edit to taste
+  workflow_dispatch: {}   # lets you trigger a run manually from the Actions tab
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install newsletter-sweep
+
+      - name: Run sweep
+        env:
+          # Only set the secrets your config.yaml actually references.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NEWSLETTER_IMAP_USER: ${{ secrets.NEWSLETTER_IMAP_USER }}
+          NEWSLETTER_IMAP_APP_PASSWORD: ${{ secrets.NEWSLETTER_IMAP_APP_PASSWORD }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+        run: newsletter-sweep run --config config.yaml --no-dry-run
+
+      - name: Commit knowledge base updates
+        run: |
+          git config user.name "newsletter-sweep bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add knowledge/ digests/ .newsletter-sweep/
+          git diff --staged --quiet || git commit -m "newsletter-sweep: scheduled run"
+          git push

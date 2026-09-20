@@ -9,7 +9,13 @@ API_VERSION = "2023-06-01"
 
 
 class AnthropicProvider(Provider):
-    def complete(self, *, model: str, system: str, prompt: str, max_tokens: int) -> str:
+    def complete(
+        self, *, model: str, system: str, prompt: str, max_tokens: int, json_mode: bool = False
+    ) -> str:
+        # json_mode is accepted for interface parity but not needed: the
+        # Messages API has no response_format switch, and Claude reliably
+        # honors the "respond with ONLY a JSON object" instruction in the
+        # triage prompt, which the lenient parser then handles.
         if not self.api_key:
             raise ProviderError(
                 "No Anthropic API key found. Paste it into the .env file next to "

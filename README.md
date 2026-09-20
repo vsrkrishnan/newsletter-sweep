@@ -85,11 +85,13 @@ proven yet:
 | Provider | Status |
 |---|---|
 | **Anthropic (Claude)** | ✅ Verified end to end. This is the recommended choice today. |
-| **OpenAI** | ⚠️ Implemented but not yet verified against the live API — may need small tweaks. |
-| **Ollama** (local models) | ⚠️ Implemented but not yet verified — no cloud cost, but triage quality depends heavily on the local model you pick. |
+| **OpenAI** | ◐ Should work — the known compatibility gotchas are handled (it adapts to both old and new token limits, and uses OpenAI's JSON mode), but it hasn't been run against the live API yet. Also works with OpenAI-compatible endpoints (Groq, Together, local vLLM). |
+| **Ollama** (local models) | ◐ Should work — uses Ollama's JSON mode so even smaller models route reliably. Not yet verified end to end, and triage quality still depends on the model you pick. |
 
-If you run the OpenAI or Ollama path and hit (or don't hit) a snag, an
-issue or PR is welcome — that's the fastest way these move from ⚠️ to ✅.
+The prompts themselves carry nothing provider-specific, so nothing is
+locked to one vendor by design. If you run the OpenAI or Ollama path and
+hit (or don't hit) a snag, an issue or PR is welcome — that's what moves
+these from ◐ to ✅.
 
 ## Setting up where things come from and go
 

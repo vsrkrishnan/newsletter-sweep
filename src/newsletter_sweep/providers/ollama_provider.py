@@ -19,18 +19,27 @@ DEFAULT_BASE_URL = "http://localhost:11434/api/chat"
 
 
 class OllamaProvider(Provider):
-    def complete(self, *, model: str, system: str, prompt: str, max_tokens: int) -> str:
+    def complete(
+        self, *, model: str, system: str, prompt: str, max_tokens: int, json_mode: bool = False
+    ) -> str:
+        body = {
+            "model": model,
+            "stream": False,
+            "options": {"num_predict": max_tokens},
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": prompt},
+            ],
+        }
+        if json_mode:
+            # Constrains the model to emit valid JSON — the single biggest
+            # reliability win for small local models, which otherwise pad
+            # their reply with prose the triage parser can't rescue.
+            body["format"] = "json"
+
         resp = requests.post(
             self.base_url or DEFAULT_BASE_URL,
-            json={
-                "model": model,
-                "stream": False,
-                "options": {"num_predict": max_tokens},
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": prompt},
-                ],
-            },
+            json=body,
             timeout=120,
         )
         if resp.status_code != 200:

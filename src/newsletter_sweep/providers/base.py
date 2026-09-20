@@ -21,8 +21,17 @@ class Provider(ABC):
         self.base_url = base_url
 
     @abstractmethod
-    def complete(self, *, model: str, system: str, prompt: str, max_tokens: int) -> str:
-        """A single synchronous text completion."""
+    def complete(
+        self, *, model: str, system: str, prompt: str, max_tokens: int, json_mode: bool = False
+    ) -> str:
+        """A single synchronous text completion. When `json_mode` is True the
+        caller wants a JSON object back and the provider should use its native
+        structured-output mode if it has one (OpenAI response_format, Ollama
+        format:json) rather than relying on the prompt alone — this is what
+        makes smaller/open models route reliably instead of dropping items
+        whenever they pad their reply with prose. Providers without such a
+        mode (Anthropic) can ignore the flag; the prompt already asks for JSON.
+        """
         raise NotImplementedError
 
 
@@ -32,6 +41,10 @@ class ModelRouter:
     the codebase calls — never Provider.complete() directly — so the
     triage/synthesis cost split (see module docstring in providers/base.py
     at the top of this file) is enforced in one place.
+
+    The JSON/prose split is fixed here too: triage() always wants a JSON
+    object, synthesize() always wants prose. That's why json_mode can be
+    hard-wired per method instead of pushed onto every call site.
     """
     provider: Provider
     triage_model: str
@@ -39,10 +52,12 @@ class ModelRouter:
 
     def triage(self, *, system: str, prompt: str, max_tokens: int = 512) -> str:
         return self.provider.complete(
-            model=self.triage_model, system=system, prompt=prompt, max_tokens=max_tokens
+            model=self.triage_model, system=system, prompt=prompt,
+            max_tokens=max_tokens, json_mode=True,
         )
 
     def synthesize(self, *, system: str, prompt: str, max_tokens: int = 1024) -> str:
         return self.provider.complete(
-            model=self.synthesis_model, system=system, prompt=prompt, max_tokens=max_tokens
+            model=self.synthesis_model, system=system, prompt=prompt,
+            max_tokens=max_tokens, json_mode=False,
         )

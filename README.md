@@ -15,7 +15,7 @@ just handles itself.
 ## Try it in 5 minutes
 
 ```bash
-pip install newsletter-sweep
+pip install git+https://github.com/vsrkrishnan/newsletter-sweep.git
 mkdir my-sweep && cd my-sweep
 newsletter-sweep init          # answer two quick questions
 # open applies_to_me.md and config.yaml, add a newsletter URL or two

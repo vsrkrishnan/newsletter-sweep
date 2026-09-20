@@ -21,7 +21,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install
-        run: pip install newsletter-sweep
+        run: pip install git+https://github.com/vsrkrishnan/newsletter-sweep.git
 
       - name: Run sweep
         env:

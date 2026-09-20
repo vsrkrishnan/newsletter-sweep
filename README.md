@@ -8,9 +8,11 @@ matters to you specifically, and saves the good ones — to a folder on your
 computer, or to Notion if you set that up. Everything else gets quietly
 skipped.
 
-It works with Anthropic, OpenAI, or a model running on your own machine —
-your choice. It can run once when you ask it to, or on a schedule so it
-just handles itself.
+It's built to work with any of Anthropic (Claude), OpenAI, or a model
+running on your own machine — though right now Claude is the only one
+verified end to end (see [Which AI models work](#which-ai-models-work)).
+It can run once when you ask it to, or on a schedule so it just handles
+itself.
 
 ## Try it in 5 minutes
 
@@ -73,6 +75,21 @@ Every step that doesn't need judgment (checking for duplicates, saving
 files, formatting) is handled by plain code — the AI model is only asked
 to make the calls that actually need it: is this worth keeping, and why
 does it matter to you. That keeps it cheap to run and easy to trust.
+
+## Which AI models work
+
+The tool talks to each provider over its plain HTTP API, so swapping
+providers is just a config change. That said, they're not all equally
+proven yet:
+
+| Provider | Status |
+|---|---|
+| **Anthropic (Claude)** | ✅ Verified end to end. This is the recommended choice today. |
+| **OpenAI** | ⚠️ Implemented but not yet verified against the live API — may need small tweaks. |
+| **Ollama** (local models) | ⚠️ Implemented but not yet verified — no cloud cost, but triage quality depends heavily on the local model you pick. |
+
+If you run the OpenAI or Ollama path and hit (or don't hit) a snag, an
+issue or PR is welcome — that's the fastest way these move from ⚠️ to ✅.
 
 ## Setting up where things come from and go
 

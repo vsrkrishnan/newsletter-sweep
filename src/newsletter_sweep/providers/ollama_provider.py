@@ -2,6 +2,12 @@
 (assuming an Ollama daemon is running). This is what makes the tool usable
 with zero cloud dependency and zero cost per run, at the price of triage
 quality — documented plainly rather than left implicit.
+
+STATUS: implemented but not yet verified end to end. The main thing to
+watch is that smaller local models often ignore "respond with ONLY JSON"
+and wrap or prose-pad their output; triage.py tolerates a code-fence
+wrapper but not arbitrary preamble, so a very small model may need a
+sturdier prompt or a larger model to route reliably.
 """
 from __future__ import annotations
 

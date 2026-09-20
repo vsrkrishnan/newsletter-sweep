@@ -1,3 +1,10 @@
+"""OpenAI provider.
+
+STATUS: implemented but not yet verified against the live API. Two things
+to check when someone first runs it for real: (1) newer models may require
+`max_completion_tokens` instead of `max_tokens`, and (2) some models only
+accept the default temperature. Adjust here if you hit a 400.
+"""
 from __future__ import annotations
 
 import requests

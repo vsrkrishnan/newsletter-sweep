@@ -2,7 +2,9 @@
 
 Everything that's hardcoded per-user in the original Claude Code command
 (paths, addresses, taxonomy, Notion page IDs, model pins) lives here instead,
-in one YAML file. See examples/shiva-profile/config.yaml for a worked example.
+in one YAML file. See examples/security-aware-pm/config.yaml for a worked
+example. Secrets never live here — they come from the environment (or a .env
+file next to config.yaml, loaded automatically on load()).
 """
 from __future__ import annotations
 
@@ -11,6 +13,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
+
+from .env import load_env_file
 
 
 class ConfigError(Exception):
@@ -70,6 +74,11 @@ class Config:
             )
         raw = yaml.safe_load(path.read_text()) or {}
         root = path.parent
+
+        # Load a .env sitting next to config.yaml, so the API key (and any
+        # IMAP/Notion secrets) are picked up without the user having to
+        # export them in the same shell. Real env vars are never clobbered.
+        load_env_file(root / ".env")
 
         provider_raw = raw.get("provider", {})
         provider = ProviderConfig(

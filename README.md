@@ -18,13 +18,33 @@ just handles itself.
 pip install git+https://github.com/vsrkrishnan/newsletter-sweep.git
 mkdir my-sweep && cd my-sweep
 newsletter-sweep init          # answer two quick questions
-# open applies_to_me.md and config.yaml, add a newsletter URL or two
-newsletter-sweep run --dry-run # shows what it *would* do — saves nothing yet
+```
+
+`init` creates three files in the folder and tells you exactly what to do
+with each. In short:
+
+1. **Paste your AI key** into the `.env` file it created — e.g.
+   `ANTHROPIC_API_KEY=sk-ant-...`. (You can skip this if you chose to run a
+   model on your own machine with Ollama.) The key stays in `.env`, which
+   is kept out of git for you.
+2. **Edit `applies_to_me.md`** — a couple of lines about what you care
+   about, so it can judge what's worth your time.
+3. **Add a newsletter URL or two** under `sources:` in `config.yaml`.
+
+Then see it work, without saving anything yet:
+
+```bash
+newsletter-sweep run --dry-run # shows what it *would* do — saves nothing
 ```
 
 No email account needed, no sign-ups, nothing to connect. It starts by
 reading public RSS feeds and saving results as plain text files, so you can
 see it working in a few minutes.
+
+> **Getting an AI key:** an [Anthropic key](https://console.anthropic.com/)
+> or [OpenAI key](https://platform.openai.com/api-keys) takes a minute to
+> create and costs a few cents per run. Or run a local model with
+> [Ollama](https://ollama.com) and pay nothing — pick that at `init` time.
 
 ## Why it asks you two questions first
 

@@ -93,10 +93,57 @@ def run_init(target_dir: Path, *, interactive: bool = True) -> None:
         )
         print(f"Wrote {config_path} — add at least one RSS feed URL under `sources:`.")
 
-    print(
-        "\nNext: edit applies_to_me.md, add a feed or two to config.yaml, then run "
-        "`newsletter-sweep run --dry-run` to see what it would do without writing anything."
+    needs_key = provider_name != "ollama"
+    if needs_key:
+        _write_env_file(target_dir / ".env", api_key_env)
+    _write_gitignore(target_dir / ".gitignore")
+
+    _print_next_steps(target_dir, api_key_env, needs_key)
+
+
+def _write_env_file(env_path: Path, api_key_env: str) -> None:
+    if env_path.exists():
+        return
+    env_path.write_text(
+        "# Secrets live here, never in config.yaml. This file is gitignored.\n"
+        f"# Paste your key after the = (no quotes needed):\n"
+        f"{api_key_env}=\n"
+        "\n"
+        "# If you add an IMAP source or Notion sink later, their secrets go\n"
+        "# here too — see references/connector-setup.md.\n"
+        "# NEWSLETTER_IMAP_USER=\n"
+        "# NEWSLETTER_IMAP_APP_PASSWORD=\n"
+        "# NOTION_TOKEN=\n"
     )
+    print(f"Wrote {env_path} — paste your API key into it (this file is gitignored).")
+
+
+def _write_gitignore(gitignore_path: Path) -> None:
+    # A user who wires up the GitHub Actions workflow will commit this whole
+    # directory. Without this, their .env (with the API key) would go with
+    # it. So init always drops a .gitignore that protects secrets and the
+    # per-run state, whether or not they ever use git.
+    if gitignore_path.exists():
+        return
+    gitignore_path.write_text(
+        ".env\n"
+        ".newsletter-sweep/\n"
+    )
+
+
+def _print_next_steps(target_dir: Path, api_key_env: str, needs_key: bool) -> None:
+    print("\nNext steps:")
+    step = 1
+    if needs_key:
+        print(f"  {step}. Paste your API key into {target_dir / '.env'} "
+              f"(the {api_key_env} line).")
+        step += 1
+    print(f"  {step}. Edit {target_dir / 'applies_to_me.md'} so triage is about you.")
+    step += 1
+    print(f"  {step}. Add a feed URL or two under `sources:` in {target_dir / 'config.yaml'}.")
+    step += 1
+    print(f"  {step}. Run `newsletter-sweep run --dry-run` — shows what it would do, "
+          "writes nothing.")
 
 
 def _ask_choice(question: str, options: list[str], *, default: str, interactive: bool) -> str:

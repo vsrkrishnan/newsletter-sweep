@@ -6,12 +6,15 @@
    Account → Security → 2-Step Verification → App passwords. This is a
    16-character password scoped to one application; it is not your login
    password and can be revoked independently.
-2. Set two environment variables (never put credentials in `config.yaml` —
-   the config file is meant to be shareable/committable):
-   ```bash
-   export NEWSLETTER_IMAP_USER="you@gmail.com"
-   export NEWSLETTER_IMAP_APP_PASSWORD="the 16-char app password"
+2. Put the credentials in your `.env` file (the one `init` created next to
+   `config.yaml`) — never in `config.yaml` itself, which is meant to be
+   shareable/committable. `.env` is gitignored for you:
    ```
+   NEWSLETTER_IMAP_USER=you@gmail.com
+   NEWSLETTER_IMAP_APP_PASSWORD=the 16-char app password
+   ```
+   (Exporting them in your shell works too — real environment variables
+   take precedence over the `.env` file.)
 3. Add a source to `config.yaml`:
    ```yaml
    sources:
@@ -64,10 +67,9 @@ Genuinely the easy case — two clicks, no OAuth flow:
    **Connections** → add your integration.
 3. Copy that page's id from its URL (the 32-character hex string after the
    last `-` or as the whole path segment).
-4. Set the token as an environment variable and reference the page id in
-   config:
-   ```bash
-   export NOTION_TOKEN="secret_..."
+4. Put the token in your `.env` file and reference the page id in config:
+   ```
+   NOTION_TOKEN=secret_...
    ```
    ```yaml
    sinks:

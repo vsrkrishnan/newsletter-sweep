@@ -12,8 +12,9 @@ class AnthropicProvider(Provider):
     def complete(self, *, model: str, system: str, prompt: str, max_tokens: int) -> str:
         if not self.api_key:
             raise ProviderError(
-                "No Anthropic API key. Set the env var named by provider.api_key_env "
-                "in config.yaml (default: ANTHROPIC_API_KEY)."
+                "No Anthropic API key found. Paste it into the .env file next to "
+                "config.yaml as ANTHROPIC_API_KEY=... (or export it in your shell). "
+                "The variable name is set by provider.api_key_env in config.yaml."
             )
         resp = requests.post(
             self.base_url or API_URL,

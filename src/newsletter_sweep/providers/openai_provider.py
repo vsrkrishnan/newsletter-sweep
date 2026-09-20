@@ -11,8 +11,9 @@ class OpenAIProvider(Provider):
     def complete(self, *, model: str, system: str, prompt: str, max_tokens: int) -> str:
         if not self.api_key:
             raise ProviderError(
-                "No OpenAI API key. Set the env var named by provider.api_key_env "
-                "in config.yaml (default: OPENAI_API_KEY)."
+                "No OpenAI API key found. Paste it into the .env file next to "
+                "config.yaml as OPENAI_API_KEY=... (or export it in your shell). "
+                "The variable name is set by provider.api_key_env in config.yaml."
             )
         resp = requests.post(
             self.base_url or API_URL,
